@@ -12,9 +12,8 @@ var DB *sql.DB
 
 func ConnectDB() {
 	var err error
-	
-	// PENTING: Ganti "password_kamu" dengan password asli PostgreSQL-mu!
-	connStr := "user=postgres password=nada dbname=pintukos_db port=5432 sslmode=disable"
+	//===============DB CONNECT===================
+	connStr := "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
 	
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
