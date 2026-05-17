@@ -16,7 +16,7 @@ func ConnectDB() {
 	//===============DB CONNECT===================
 	connStr := os.Getenv("DATABASE_URL")
 if connStr == "" {
-    connStr = "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
+    connStr = "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@autorack.proxy.rlwy.net:19716/railway"
 }
 	
 	DB, err = sql.Open("postgres", connStr)
