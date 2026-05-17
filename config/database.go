@@ -3,6 +3,7 @@ package config
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -13,7 +14,10 @@ var DB *sql.DB
 func ConnectDB() {
 	var err error
 	//===============DB CONNECT===================
-	connStr := "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
+	connStr := os.Getenv("DATABASE_URL")
+if connStr == "" {
+    connStr = "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
+}
 	
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
