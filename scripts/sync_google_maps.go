@@ -68,6 +68,14 @@ func main() {
 
 	fmt.Printf("Ditemukan %d tempat. Memulai proses insert...\n\n", len(placesData.Results))
 
+	fmt.Println("Menghapus data kos lama dari database...")
+	_, errDelete := config.DB.Exec("TRUNCATE TABLE kos CASCADE")
+	if errDelete != nil {
+		fmt.Printf("Peringatan: Gagal menghapus data lama: %v\n", errDelete)
+	} else {
+		fmt.Println("Data lama berhasil dibersihkan! Mulai memasukkan data baru...")
+	}
+	
 	for _, place := range placesData.Results {
 		// TAHAP 2: Minta nomor HP ke Google menggunakan PlaceID
 		detailUrl := fmt.Sprintf("https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&fields=formatted_phone_number&key=%s", place.PlaceID, apiKey)
