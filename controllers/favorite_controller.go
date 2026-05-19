@@ -52,7 +52,7 @@ func ToggleFavorite(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan data"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "Disimpan ke Favorit ❤️", "is_favorite": true})
+		c.JSON(http.StatusOK, gin.H{"message": "Disimpan ke Favorit", "is_favorite": true})
 	} else {
 		// Jika Sudah -> Hapus dari tabel favorites (Un-favorite)
 		_, err = config.DB.Exec("DELETE FROM favorites WHERE id = $1", favID)
@@ -60,7 +60,7 @@ func ToggleFavorite(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menghapus data"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "Dihapus dari Favorit 💔", "is_favorite": false})
+		c.JSON(http.StatusOK, gin.H{"message": "Dihapus dari Favorit", "is_favorite": false})
 	}
 }
 
