@@ -14,12 +14,11 @@ import (
 func GetKosList(c *gin.Context) {
 	// 1. Ambil parameter dari URL (jika ada)
 	search := c.Query("search")
-	kosType := c.Query("type")
 	minPrice := c.Query("min_price")
 	maxPrice := c.Query("max_price")
 
 	// 2. Susun Query SQL Dasar
-	query := "SELECT id, name, price, type, location, description, facilities, wa_number FROM kos WHERE 1=1"
+	query := "SELECT id, name, price, location, description, facilities, wa_number FROM kos WHERE 1=1"
 	var args []interface{}
 	argCount := 1
 
@@ -27,12 +26,6 @@ func GetKosList(c *gin.Context) {
 	if search != "" {
 		query += fmt.Sprintf(" AND (name ILIKE $%d OR location ILIKE $%d OR description ILIKE $%d)", argCount, argCount, argCount)
 		args = append(args, "%"+search+"%")
-		argCount++
-	}
-
-	if kosType != "" && kosType != "Semua" {
-		query += fmt.Sprintf(" AND type = $%d", argCount)
-		args = append(args, kosType)
 		argCount++
 	}
 
@@ -63,14 +56,13 @@ func GetKosList(c *gin.Context) {
 	var kosList []gin.H
 	for rows.Next() {
 		var id int
-		var name, price, kType, location, description, facilities, waNumber string
+		var name, price, location, description, facilities, waNumber string
 		
-		if err := rows.Scan(&id, &name, &price, &kType, &location, &description, &facilities, &waNumber); err == nil {
+		if err := rows.Scan(&id, &name, &price, &location, &description, &facilities, &waNumber); err == nil {
 			kosList = append(kosList, gin.H{
 				"id":          id,
 				"name":        name,
 				"price":       price,
-				"type":        kType,
 				"location":    location,
 				"description": description,
 				"facilities":  facilities,
@@ -97,9 +89,9 @@ func GetKosDetail(c *gin.Context) {
 	var priceFloat float64
 	var facilities pq.StringArray // Tipe khusus agar Golang paham Array PostgreSQL
 
-	query := "SELECT id, name, type, price, location, description, facilities, wa_number FROM kos WHERE id = $1"
+	query := "SELECT id, name, price, location, description, facilities, wa_number FROM kos WHERE id = $1"
 	err := config.DB.QueryRow(query, id).Scan(
-		&k.ID, &k.Name, &k.Type, &priceFloat, &k.Location, &k.Description, &facilities, &k.WaNumber,
+		&k.ID, &k.Name, &priceFloat, &k.Location, &k.Description, &facilities, &k.WaNumber,
 	)
 
 	if err != nil {

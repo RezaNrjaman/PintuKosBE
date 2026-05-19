@@ -1,0 +1,331 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict eNCj7R2db5KN0i78iDKIJmoUTiqoN5pvw9dDIHAQR8YxJwmZXgdeyC1GkPdENqF
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
+
+-- Started on 2026-05-17 11:49:02
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 224 (class 1259 OID 16420)
+-- Name: favorites; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.favorites (
+    id integer NOT NULL,
+    user_id integer,
+    kos_id integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.favorites OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16419)
+-- Name: favorites_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.favorites_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.favorites_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5042 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: favorites_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.favorites_id_seq OWNED BY public.favorites.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16390)
+-- Name: kos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.kos (
+    id integer NOT NULL,
+    name character varying(150) NOT NULL,
+    type character varying(50) NOT NULL,
+    price numeric(10,2) NOT NULL,
+    location character varying(255) NOT NULL,
+    description text,
+    facilities text[],
+    image_url character varying(255),
+    wa_number character varying(20) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.kos OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16389)
+-- Name: kos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.kos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.kos_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5043 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: kos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.kos_id_seq OWNED BY public.kos.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 16406)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    email character varying(100) NOT NULL,
+    password_hash character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16405)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5044 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 4870 (class 2604 OID 16423)
+-- Name: favorites id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorites ALTER COLUMN id SET DEFAULT nextval('public.favorites_id_seq'::regclass);
+
+
+--
+-- TOC entry 4866 (class 2604 OID 16393)
+-- Name: kos id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.kos ALTER COLUMN id SET DEFAULT nextval('public.kos_id_seq'::regclass);
+
+
+--
+-- TOC entry 4868 (class 2604 OID 16409)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 5036 (class 0 OID 16420)
+-- Dependencies: 224
+-- Data for Name: favorites; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.favorites (id, user_id, kos_id, created_at) FROM stdin;
+3	3	8	2026-05-16 12:06:27.912509
+\.
+
+
+--
+-- TOC entry 5032 (class 0 OID 16390)
+-- Dependencies: 220
+-- Data for Name: kos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.kos (id, name, type, price, location, description, facilities, image_url, wa_number, created_at) FROM stdin;
+3	Kost Urban House Setiabudi Bandung	Campur	1200000.00	Jl. Dr. Setiabudi No.186E, Hegarmanah, Kec. Cidadap, Kota Bandung, Jawa Barat 40141, Indonesia	Kos strategis, Rating Google: 4.9. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.949324
+4	Graha Setiabudi Bandung Kostan	Campur	1200000.00	Jl. Dr. Setiabudi No.80A, RT.03/RW.04, Hegarmanah, Kec. Cidadap, Kota Bandung, Jawa Barat 40141, Indonesia	Kos strategis, Rating Google: 4.9. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.982214
+5	Kost Bale Asri Setiabudi Bandung	Campur	1200000.00	Gg. Puradinata Jl. Dr. Setiabudi No.11/174B, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.5. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.983581
+6	Kost Rafar Kingdom Setiabudi Bandung	Campur	1200000.00	Jl. Budi Luhur I No.:1, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 3.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.985504
+7	Kost Wisma Nuri, Bandung	Campur	1200000.00	Jl. Cipaku Indah II No.36, RT.01/RW.02, Ledeng, Kec. Cidadap, Kota Bandung, Jawa Barat 40143, Indonesia	Kos strategis, Rating Google: 5.0. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.987279
+8	Kost Putri Jl Setiabudi 3B Bandung	Campur	1200000.00	Jl. Dr. Setiabudi No.3B, Hegarmanah, Kec. Cidadap, Kota Bandung, Jawa Barat 40131, Indonesia	Kos strategis, Rating Google: 5.0. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.989031
+9	Kost Modern	Campur	1200000.00	Jl. Gegerkalong Tengah No.20, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.3. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.990551
+10	Green Kost setiabudhi	Campur	1200000.00	Jl. Dr. Setiabudi No.199A, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.1. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.992658
+11	Kost Pondok Safira dekat UPI Bandung	Campur	1200000.00	Jl. Cilimus No.35, Isola, Kec. Sukasari, Kota Bandung, Jawa Barat 40154, Indonesia	Kos strategis, Rating Google: 4.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.994715
+12	Kos Melibu Adb	Campur	1200000.00	Jl. Gegerkalong Tengah Gg. 8, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.9. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.996387
+13	Kost Pa Agus	Campur	1200000.00	Jl. Gegerkalong Girang No.47 G 6, RT.6/RW.3, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.6. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.997886
+14	Kost twins	Campur	1200000.00	Jl. Dr. Setiabudi No.199B, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.3. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:37.999433
+15	Alhuda Kost / Kos / Kosan UPI Bandung	Campur	1200000.00	Jl. Cilimus No.20, RT.07/RW.06, Isola, Kec. Sukasari, Kota Bandung, Jawa Barat 40154, Indonesia	Kos strategis, Rating Google: 4.1. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.001199
+16	NT31 Rumah Kost	Campur	1200000.00	Jl. Negla Tengah No.31, RT.05/RW.04, Isola, Kec. Sukasari, Kota Bandung, Jawa Barat 40154, Indonesia	Kos strategis, Rating Google: 4.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.002927
+17	KOST ODOL SETIABUDI	Campur	1200000.00	Jl. Dr. Setiabudi No.119B, RT./RW/RW.007/005, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 5.0. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.004664
+18	Kost Polaris	Campur	1200000.00	Jalan Negla Hilir No. 2/171A RT. 01/05 Isola Sukasari, Isola, Bandung, Kota Bandung, Jawa Barat 40154, Indonesia	Kos strategis, Rating Google: 4.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.006527
+19	Kosan Ibu Dona	Campur	1200000.00	Jl. Dr. Setiabudi No.14/174b, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40141, Indonesia	Kos strategis, Rating Google: 4.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.010626
+20	Jambu House Kost Guest House	Campur	1200000.00	Jl. Cipaku Indah II No.Kavling 2, Ledeng, Kec. Cidadap, Kota Bandung, Jawa Barat 40143, Indonesia	Kos strategis, Rating Google: 4.7. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.01279
+21	Kost Ibu Cicih	Campur	1200000.00	Jl. Dr. Setiabudi No.35, RT.02/RW.03, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40161, Indonesia	Kos strategis, Rating Google: 4.9. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.014544
+22	KOST PUTRI MADINA HOUSE 2 BANDUNG	Campur	1200000.00	Jl. Pak Gatot VI No.206b, Gegerkalong, Kec. Sukasari, Kota Bandung, Jawa Barat 40153, Indonesia	Kos strategis, Rating Google: 4.8. Diambil otomatis dari Google Maps.	{Kasur,Lemari,"Kamar Mandi Dalam",Wi-Fi}	\N	+6281234567890	2026-05-16 11:44:38.017068
+\.
+
+
+--
+-- TOC entry 5034 (class 0 OID 16406)
+-- Dependencies: 222
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (id, name, email, password_hash, created_at) FROM stdin;
+1	tes	test@gmail.com	$2a$10$xB14fuOqmsMOmobrPpBDMuL5XJFW8QL5PTBN9nj73Cr0pkk./7m8O	2026-05-15 19:20:56.473907
+2	Reza	Reza	$2a$10$zRy0jyRXPnhgGof4iM/22ejul3d1WRaUrDhPbSDUPzRUuVFC8RIVi	2026-05-16 09:55:09.87685
+3	Reza	reza@gmail.com	$2a$10$JNX6fOVtYyPZlk1vCBiR2eoS5NVbZcFeomOWyXjcFyg4iZHS3VxGW	2026-05-16 10:12:03.60611
+4	tester	tester@gmail.com	$2a$10$NyF6rUlgDMhUoxUOCJ1mm.GErp4Hq1cChNdk89QZ17HoQOm57B7C2	2026-05-16 10:56:50.110852
+\.
+
+
+--
+-- TOC entry 5045 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: favorites_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.favorites_id_seq', 4, true);
+
+
+--
+-- TOC entry 5046 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: kos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.kos_id_seq', 22, true);
+
+
+--
+-- TOC entry 5047 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 4, true);
+
+
+--
+-- TOC entry 4879 (class 2606 OID 16427)
+-- Name: favorites favorites_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorites
+    ADD CONSTRAINT favorites_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4881 (class 2606 OID 16429)
+-- Name: favorites favorites_user_id_kos_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorites
+    ADD CONSTRAINT favorites_user_id_kos_id_key UNIQUE (user_id, kos_id);
+
+
+--
+-- TOC entry 4873 (class 2606 OID 16404)
+-- Name: kos kos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.kos
+    ADD CONSTRAINT kos_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4875 (class 2606 OID 16418)
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4877 (class 2606 OID 16416)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4882 (class 2606 OID 16435)
+-- Name: favorites favorites_kos_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorites
+    ADD CONSTRAINT favorites_kos_id_fkey FOREIGN KEY (kos_id) REFERENCES public.kos(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4883 (class 2606 OID 16430)
+-- Name: favorites favorites_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorites
+    ADD CONSTRAINT favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+-- Completed on 2026-05-17 11:49:03
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict eNCj7R2db5KN0i78iDKIJmoUTiqoN5pvw9dDIHAQR8YxJwmZXgdeyC1GkPdENqF
+

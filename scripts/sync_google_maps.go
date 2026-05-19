@@ -66,7 +66,6 @@ func main() {
 	// 4. Masukkan (Insert) ke Database
 	for _, place := range placesData.Results {
 		// Memberikan nilai default karena Google Maps hanya memberikan nama, alamat, & rating
-		kosType := "Campur" // Asumsi awal
 		price := 1   // Harga default perkiraan di Setiabudi
 		desc := fmt.Sprintf("Kos strategis, Rating Google: %.1f. Diambil otomatis dari Google Maps.", place.Rating)
 		facilities := pq.StringArray{"Kasur", "Lemari", "Kamar Mandi Dalam", "Wi-Fi"} // Fasilitas standar
@@ -74,12 +73,12 @@ func main() {
 
 		// SQL Query
 		queryInsert := `
-			INSERT INTO kos (name, type, price, location, description, facilities, wa_number) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			INSERT INTO kos (name, price, location, description, facilities, wa_number) 
+			VALUES ($1, $2, $3, $4, $5, $6)
 		`
 		
 		// Eksekusi insert
-		_, err := config.DB.Exec(queryInsert, place.Name, kosType, price, place.FormattedAddress, desc, facilities, waNumber)
+		_, err := config.DB.Exec(queryInsert, place.Name, price, place.FormattedAddress, desc, facilities, waNumber)
 		
 		if err != nil {
 			log.Printf("❌ Gagal insert kos '%s': %v\n", place.Name, err)
