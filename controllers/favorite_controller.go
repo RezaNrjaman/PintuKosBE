@@ -17,7 +17,7 @@ func getUserIdByEmail(email string) (int, error) {
 
 // Fungsi 1: Cek Status (Apakah Kos ini sudah disukai pengguna?)
 func CheckFavorite(c *gin.Context) {
-	email := c.MustGet("user_email").(string) // Ambil email dari satpam/middleware
+	email := c.MustGet("user_email").(string)
 	userID, _ := getUserIdByEmail(email)
 	kosID := c.Param("id")
 
@@ -43,20 +43,21 @@ func ToggleFavorite(c *gin.Context) {
 
 	// Cek apakah data favorit sudah ada di database
 	var favID int
-	err = config.DB.QueryRow("SELECT id FROM favorites WHERE user_id = $1 AND kos_id = $2", userID, kosID).Scan(&favID)
+	// Menggunakan errScan agar tidak bentrok dengan variabel err di atas
+	errScan := config.DB.QueryRow("SELECT id FROM favorites WHERE user_id = $1 AND kos_id = $2", userID, kosID).Scan(&favID)
 
-	if err == sql.ErrNoRows {
+	if errScan == sql.ErrNoRows {
 		// Jika Belum -> Masukkan ke tabel favorites
-		_, err = config.DB.Exec("INSERT INTO favorites (user_id, kos_id) VALUES ($1, $2)", userID, kosID)
-		if err != nil {
+		_, errExec := config.DB.Exec("INSERT INTO favorites (user_id, kos_id) VALUES ($1, $2)", userID, kosID)
+		if errExec != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan data"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Disimpan ke Favorit", "is_favorite": true})
 	} else {
-		// Jika Sudah -> Hapus dari tabel favorites (Un-favorite)
-		_, err = config.DB.Exec("DELETE FROM favorites WHERE id = $1", favID)
-		if err != nil {
+		// Jika Sudah -> Hapus dari tabel favorites
+		_, errExec := config.DB.Exec("DELETE FROM favorites WHERE id = $1", favID)
+		if errExec != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menghapus data"})
 			return
 		}
@@ -73,14 +74,15 @@ func GetFavorites(c *gin.Context) {
 		return
 	}
 
-	rows, err := config.DB.Query(`
+	// Menggunakan errQuery agar tidak bentrok dengan variabel err
+	rows, errQuery := config.DB.Query(`
 		SELECT k.id, k.name, k.rating, k.location 
 		FROM kos k 
 		JOIN favorites f ON k.id = f.kos_id 
 		WHERE f.user_id = $1
 	`, userID)
 
-	if err != nil {
+	if errQuery != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data favorit"})
 		return
 	}
@@ -90,19 +92,19 @@ func GetFavorites(c *gin.Context) {
 	for rows.Next() {
 		var id int
 		var name, location string
-		var rating float64 // 
+		var rating float64
 		
-		if err := rows.Scan(&id, &name, &rating, &location); err == nil {
+		// Menggunakan errRow agar spesifik untuk proses scan
+		if errRow := rows.Scan(&id, &name, &rating, &location); errRow == nil {
 			favorites = append(favorites, gin.H{
 				"id":       id,
 				"name":     name,
-				"rating":   rating, 
+				"rating":   rating,
 				"location": location,
 			})
 		}
 	}
 
-	// Jika kosong, kirim array kosong agar Flutter tidak error
 	if len(favorites) == 0 {
 		c.JSON(http.StatusOK, []gin.H{})
 		return
