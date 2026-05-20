@@ -73,9 +73,8 @@ func GetFavorites(c *gin.Context) {
 		return
 	}
 
-	// Ambil data kos dengan menggabungkan (JOIN) tabel kos dan favorites
 	rows, err := config.DB.Query(`
-		SELECT k.id, k.name, k.price, k.location 
+		SELECT k.id, k.name, k.rating, k.location 
 		FROM kos k 
 		JOIN favorites f ON k.id = f.kos_id 
 		WHERE f.user_id = $1
@@ -90,12 +89,14 @@ func GetFavorites(c *gin.Context) {
 	var favorites []gin.H
 	for rows.Next() {
 		var id int
-		var name, price, location string
-		if err := rows.Scan(&id, &name, &price, &location); err == nil {
+		var name, location string
+		var rating float64 // 
+		
+		if err := rows.Scan(&id, &name, &rating, &location); err == nil {
 			favorites = append(favorites, gin.H{
 				"id":       id,
 				"name":     name,
-				"price":    price,
+				"rating":   rating, 
 				"location": location,
 			})
 		}

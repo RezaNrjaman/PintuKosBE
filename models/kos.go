@@ -3,7 +3,7 @@ package models
 type Kos struct {
 	ID          int      `json:"id"`
 	Name        string   `json:"name"`
-	Price       string   `json:"price"`
+	Rating      float64  `json:"rating"`
 	Location    string   `json:"location"`
 	Description string   `json:"description"`
 	Facilities  []string `json:"facilities"`

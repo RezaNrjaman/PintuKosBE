@@ -104,17 +104,17 @@ func main() {
 			detailResp.Body.Close()
 		}
 
-		price := 1
-		desc := fmt.Sprintf("Kos strategis, Rating Google: %.1f. Diambil otomatis dari Google Maps.", place.Rating)
+		// price := 1
+		desc := fmt.Sprintf("Kos strategis sekitar Setiabudi. Diambil otomatis dari Google Maps.")
 		facilities := pq.StringArray{"Kasur", "Lemari", "Kamar Mandi Dalam", "Wi-Fi"}
 
 		// Eksekusi insert (menyimpan waNumber)
 		queryInsert := `
-			INSERT INTO kos (name, price, location, description, facilities, wa_number) 
+			INSERT INTO kos (name, rating, location, description, facilities, wa_number) 
 			VALUES ($1, $2, $3, $4, $5, $6)
 		`
 		
-		_, errExec := config.DB.Exec(queryInsert, place.Name, price, place.FormattedAddress, desc, facilities, waNumber)
+		_, errExec := config.DB.Exec(queryInsert, place.Name, place.Rating, place.FormattedAddress, desc, facilities, waNumber)
 		
 		if errExec != nil {
 			log.Printf("[GAGAL] insert kos '%s'\n", place.Name)
