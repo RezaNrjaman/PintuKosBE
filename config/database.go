@@ -16,7 +16,7 @@ func ConnectDB() {
 	//===============DB CONNECT===================
 	connStr := os.Getenv("DATABASE_URL")
 if connStr == "" {
-    connStr = "postgresql://neondb_owner:npg_qsIzM0b7nRBW@ep-sparkling-water-aobbofv7-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    connStr = "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
 }
 	
 	DB, err = sql.Open("postgres", connStr)
