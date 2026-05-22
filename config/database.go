@@ -1,34 +1,30 @@
 package config
 
 import (
-	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // DB adalah variabel global agar bisa dipakai di controller
-var DB *sql.DB
+var DB *gorm.DB
 
 func ConnectDB() {
-	var err error
-	//===============DB CONNECT===================
-	connStr := os.Getenv("DATABASE_URL")
-if connStr == "" {
-    connStr = "postgresql://postgres:vyusobUOdtQMerjxQifcArqncKAnhoil@postgres.railway.internal:5432/railway"
-}
-	
-	DB, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal("Gagal membaca settingan DB: ", err)
+	// Mengambil URL dari file .env (saat di laptop) atau Variables (saat di Railway)
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("ERROR: DATABASE_URL belum di-set!")
 	}
 
-	// Tes koneksi
-	err = DB.Ping()
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Gagal terhubung! Cek password/username kamu: ", err)
+		log.Fatal("Gagal koneksi ke database:", err)
 	}
-	
-	log.Println("MANTAP! Golang berhasil terhubung ke PostgreSQL!")
+
+	DB = db
+	fmt.Println("Berhasil terkoneksi ke Database!")
 }
