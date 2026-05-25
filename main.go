@@ -6,10 +6,12 @@ import (
 	"pintukos-backend/config"
 	"pintukos-backend/routes"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
 func main() {
+	godotenv.Load()
 	// 1. Hubungkan Database
 	config.ConnectDB()
 
