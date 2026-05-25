@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -14,6 +15,11 @@ import (
 var DB *sql.DB
 
 func ConnectDB() {
+	// ✅ BACA FILE .env TERLEBIH DAHULU
+	errEnv := godotenv.Load()
+	if errEnv != nil {
+		fmt.Println("Peringatan: File .env tidak ditemukan, mencoba menggunakan environment sistem...")
+	}
 	// Mengambil URL dari file .env (saat di laptop) atau Variables (saat di Railway)
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {

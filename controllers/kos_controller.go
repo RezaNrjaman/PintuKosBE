@@ -5,22 +5,26 @@ import (
 	"net/http"
 	"pintukos-backend/config"
 	"pintukos-backend/models"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq" // Digunakan untuk membaca tipe data Array (Fasilitas) dari PostgreSQL
 )
 
 // Fungsi untuk Beranda (Mengambil semua list kos + Filter)
 func GetKosList(c *gin.Context) {
-	// 1. Ambil parameter dari URL (jika ada)
 	search := c.Query("search")
 
-	// Query SQL disesuaikan (price diganti rating)
-	query := "SELECT id, name, rating, location, description, facilities, wa_number FROM kos WHERE 1=1"
+	// ✅ Perubahan: Ambil data latitude dan longitude menggunakan COALESCE sebagai pelindung keamanan data kosong
+	query := `SELECT id, name, rating, location, description, COALESCE(wa_number, ''), 
+			  COALESCE(latitude, 0), COALESCE(longitude, 0) FROM kos WHERE 1=1`
 	var args []interface{}
 	argCount := 1
 
 	if search != "" {
+		search = strings.TrimSpace(search)
+		searchLower := strings.ToLower(search)
+		search = strings.ReplaceAll(searchLower, "kost", "kos")
+
 		query += fmt.Sprintf(" AND (name ILIKE $%d OR location ILIKE $%d OR description ILIKE $%d)", argCount, argCount, argCount)
 		args = append(args, "%"+search+"%")
 		argCount++
@@ -38,43 +42,43 @@ func GetKosList(c *gin.Context) {
 	var kosList []gin.H
 	for rows.Next() {
 		var id int
-		var name, location, description, facilities, waNumber string
-		var rating float64 // Tambahkan variabel tampung untuk rating
+		var name, location, description, waNumber string
+		var rating, lat, lng float64 
 		
-		if err := rows.Scan(&id, &name, &rating, &location, &description, &facilities, &waNumber); err == nil {
+		// ✅ Perubahan: Tambahkan scanning variabel lat dan lng
+		if err := rows.Scan(&id, &name, &rating, &location, &description, &waNumber, &lat, &lng); err == nil {
 			kosList = append(kosList, gin.H{
 				"id":          id,
 				"name":        name,
-				"rating":      rating, // Masukkan rating ke JSON respons
+				"rating":      rating,
 				"location":    location,
 				"description": description,
-				"facilities":  facilities,
 				"wa_number":   waNumber,
+				"latitude":    lat,  // ✅ Dikirim ke JSON respons
+				"longitude":   lng,  // ✅ Dikirim ke JSON respons
 			})
 		}
 	}
 
-	// 6. Jika tidak ada kos yang cocok dengan filter, kirim array kosong agar Flutter tidak error
 	if len(kosList) == 0 {
 		c.JSON(http.StatusOK, []gin.H{})
 		return
 	}
 
-	// 7. Kirim data yang sukses ke Flutter
 	c.JSON(http.StatusOK, kosList)
 }
 
-// Fungsi untuk Halaman Detail (Mengambil 1 kos secara spesifik berdasarkan ID)
+// Fungsi untuk Halaman Detail
 func GetKosDetail(c *gin.Context) {
 	id := c.Param("id")
 	
 	var k models.Kos
-	var facilities pq.StringArray
 
-	// Scan langsung dimasukkan ke dalam k.Rating tanpa konversi string manual
-	query := "SELECT id, name, rating, location, description, facilities, wa_number FROM kos WHERE id = $1"
+	// ✅ Perubahan: Ambil data latitude dan longitude pada query detail
+	query := `SELECT id, name, rating, location, description, COALESCE(wa_number, ''), 
+			  COALESCE(latitude, 0), COALESCE(longitude, 0) FROM kos WHERE id = $1`
 	err := config.DB.QueryRow(query, id).Scan(
-		&k.ID, &k.Name, &k.Rating, &k.Location, &k.Description, &facilities, &k.WaNumber,
+		&k.ID, &k.Name, &k.Rating, &k.Location, &k.Description, &k.WaNumber, &k.Latitude, &k.Longitude,
 	)
 
 	if err != nil {
@@ -82,6 +86,5 @@ func GetKosDetail(c *gin.Context) {
 		return
 	}
 
-	k.Facilities = facilities
 	c.JSON(http.StatusOK, k)
 }
