@@ -10,9 +10,10 @@ import (
 	"strings"
 
 	"pintukos-backend/config"
+
+	"github.com/lib/pq" // ✅ Wajib diimport untuk memasukkan data Array String ke PostgreSQL
 )
 
-// Menangkap data dari pencarian awal termasuk koordinat geometry
 type PlacesResponse struct {
 	Results []struct {
 		Name             string  `json:"name"`
@@ -24,7 +25,10 @@ type PlacesResponse struct {
 				Lat float64 `json:"lat"`
 				Lng float64 `json:"lng"`
 			} `json:"location"`
-		} `json:"geometry"` // Membaca data koordinat langsung dari Text Search
+		} `json:"geometry"`
+		Photos []struct { // ✅ Tangkap array foto dari Google Maps API
+			PhotoReference string `json:"photo_reference"`
+		} `json:"photos"`
 	} `json:"results"`
 	Status string `json:"status"`
 }
@@ -40,9 +44,9 @@ func main() {
 	fmt.Println("Mencoba terhubung ke database...")
 	config.ConnectDB()
 
-	apiKey := "AIzaSyBN6V5jlX9RWTrAcLtSYAmyYRfk8cIV7_8"
+	apiKey := "AIzaSyBN6V5jlX9RWTrAcLtSYAmyYRfk8cIV7_8" // API Key Google Maps milikmu
 
-	fmt.Println("Mengambil data kos di sekitar Setiabudi Bandung dari Google Maps...")
+	fmt.Println("Mengambil data kos beserta fotonya dari Google Maps...")
 
 	query := url.QueryEscape("kos kosan sekitar setiabudi bandung")
 	apiUrl := fmt.Sprintf("https://maps.googleapis.com/maps/api/place/textsearch/json?query=%s&key=%s", query, apiKey)
@@ -73,15 +77,13 @@ func main() {
 	_, errDelete := config.DB.Exec("TRUNCATE TABLE kos CASCADE")
 	if errDelete != nil {
 		fmt.Printf("Peringatan: Gagal menghapus data lama: %v\n", errDelete)
-	} else {
-		fmt.Println("Data lama berhasil dibersihkan! Mulai memasukkan data baru...")
 	}
-	
+
 	for _, place := range placesData.Results {
+		// --- 1. Ambil Nomor HP ---
 		detailUrl := fmt.Sprintf("https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&fields=formatted_phone_number&key=%s", place.PlaceID, apiKey)
 		detailResp, errDetail := http.Get(detailUrl)
-		
-		waNumber := "" 
+		waNumber := ""
 
 		if errDetail == nil {
 			detailBody, _ := io.ReadAll(detailResp.Body)
@@ -100,31 +102,39 @@ func main() {
 			detailResp.Body.Close()
 		}
 
+		// --- 2. Kumpulkan URL Gambar Asli ---
+		var imageUrls []string
+		for _, photo := range place.Photos {
+			// Rakit API call Place Photo (maxwidth=800 agar gambar tetap tajam namun tidak lemot)
+			photoUrl := fmt.Sprintf("https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=%s&key=%s", photo.PhotoReference, apiKey)
+			imageUrls = append(imageUrls, photoUrl)
+		}
+
 		desc := fmt.Sprintf("Kos strategis sekitar Setiabudi. Diambil otomatis dari Google Maps.")
-		
-		//  Perubahan: Tambahkan kolom latitude dan longitude ke dalam query SQL
+
+		// --- 3. Masukkan Data Beserta Array URL Gambarnya ---
 		queryInsert := `
-			INSERT INTO kos (name, rating, location, description, wa_number, latitude, longitude) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			INSERT INTO kos (name, rating, location, description, wa_number, latitude, longitude, image_urls) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		`
-		
-		//  Perubahan: Masukkan variabel Lat dan Lng dari koordinat objek geometry Google Maps
-		_, errExec := config.DB.Exec(queryInsert, 
-			place.Name, 
-			place.Rating, 
-			place.FormattedAddress, 
-			desc, 
-			waNumber, 
-			place.Geometry.Location.Lat, 
+
+		_, errExec := config.DB.Exec(queryInsert,
+			place.Name,
+			place.Rating,
+			place.FormattedAddress,
+			desc,
+			waNumber,
+			place.Geometry.Location.Lat,
 			place.Geometry.Location.Lng,
+			pq.Array(imageUrls), // ✅ Membungkus Array Golang menjadi format TEXT[] PostgreSQL
 		)
-		
+
 		if errExec != nil {
 			log.Printf("[GAGAL] insert kos '%s': %v\n", place.Name, errExec)
 		} else {
-			fmt.Printf("[SUKSES] %s (Lat: %f, Lng: %f)\n", place.Name, place.Geometry.Location.Lat, place.Geometry.Location.Lng)
+			fmt.Printf("[SUKSES] %s (Gambar ditemukan: %d)\n", place.Name, len(imageUrls))
 		}
 	}
-	
-	fmt.Println("\n[SELESAI] Proses sinkronisasi data koordinat dari Google Maps selesai!")
+
+	fmt.Println("\n[SELESAI] Proses sinkronisasi data beserta gambar dari Google Maps selesai!")
 }

@@ -9,4 +9,5 @@ type Kos struct {
 	WaNumber    string  `json:"wa_number"`
 	Latitude    float64 `json:"latitude"`
 	Longitude   float64 `json:"longitude"`
+	ImageURLs   []string `json:"image_urls"`
 }
