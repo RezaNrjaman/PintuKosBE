@@ -25,6 +25,7 @@ func SetupRoutes() *gin.Engine {
 		protected.POST("/favorites/toggle/:id", controllers.ToggleFavorite) 
 		protected.GET("/favorites", controllers.GetFavorites)
 		protected.GET("/profile", controllers.GetProfile)
+		protected.PUT("/profile", controllers.UpdateProfile)
 	}
 
 	return r

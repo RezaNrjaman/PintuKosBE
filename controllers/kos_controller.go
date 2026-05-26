@@ -8,14 +8,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq" // ✅ Import ini agar bisa mem-parsing data array dari Database
+	"github.com/lib/pq"
 )
 
 // Fungsi untuk Beranda
 func GetKosList(c *gin.Context) {
 	search := c.Query("search")
 
-	// ✅ Ambil kolom image_urls dari database
 	query := `SELECT id, name, rating, location, description, COALESCE(wa_number, ''), 
 			  COALESCE(latitude, 0), COALESCE(longitude, 0), COALESCE(image_urls, '{}') 
 			  FROM kos WHERE 1=1`
@@ -24,12 +23,22 @@ func GetKosList(c *gin.Context) {
 
 	if search != "" {
 		search = strings.TrimSpace(search)
-		searchLower := strings.ToLower(search)
-		search = strings.ReplaceAll(searchLower, "kost", "kos")
+		
+		words := strings.Fields(search)
 
-		query += fmt.Sprintf(" AND (name ILIKE $%d OR location ILIKE $%d OR description ILIKE $%d)", argCount, argCount, argCount)
-		args = append(args, "%"+search+"%")
-		argCount++
+		for _, word := range words {
+			wordLower := strings.ToLower(word)
+
+			// Jika yang diketik adalah variasi kata "kos", kita sapu bersih dengan '%kos%'
+			if wordLower == "kos" || wordLower == "kost" || wordLower == "kosan" || wordLower == "kostan" {
+				query += ` AND (name ILIKE '%kos%' OR location ILIKE '%kos%' OR description ILIKE '%kos%')`
+			} else {
+				// Untuk kata tambahan (misal: nama daerah seperti "setiabudi"), cari secara spesifik
+				query += fmt.Sprintf(" AND (name ILIKE $%d OR location ILIKE $%d OR description ILIKE $%d)", argCount, argCount, argCount)
+				args = append(args, "%"+word+"%")
+				argCount++
+			}
+		}
 	}
 
 	query += " ORDER BY id ASC"
@@ -46,7 +55,7 @@ func GetKosList(c *gin.Context) {
 		var id int
 		var name, location, description, waNumber string
 		var rating, lat, lng float64
-		var imageURLs pq.StringArray // ✅ Penampung array gambar
+		var imageURLs pq.StringArray 
 
 		if err := rows.Scan(&id, &name, &rating, &location, &description, &waNumber, &lat, &lng, &imageURLs); err == nil {
 			kosList = append(kosList, gin.H{

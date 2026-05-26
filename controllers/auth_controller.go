@@ -109,3 +109,28 @@ func GetProfile(c *gin.Context) {
 		"email": email,
 	})
 }
+
+func UpdateProfile(c *gin.Context) {
+    // 1. Ambil ID User dari Token JWT (asumsi email ada di context dari middleware)
+    email, _ := c.Get("email") 
+    
+    var input struct {
+        Name  string `json:"name"`
+        Email string `json:"email"`
+    }
+
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Data tidak valid"})
+        return
+    }
+
+    // 2. Update database
+    query := "UPDATE users SET name = $1, email = $2 WHERE email = $3"
+    _, err := config.DB.Exec(query, input.Name, input.Email, email)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal update profil"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Profil berhasil diperbarui"})
+}
