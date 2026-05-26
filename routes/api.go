@@ -27,9 +27,8 @@ func SetupRoutes() *gin.Engine {
 		
 		protected.GET("/profile", controllers.GetProfile)
 		
-		// UBAH BAGIAN INI: 
-		// Hapus "/update" agar sesuai dengan Flutter, dan hapus middleware.RequireAuth() yang berulang
 		protected.PUT("/profile", controllers.UpdateProfile) 
+		protected.PUT("/security/password", controllers.ChangePassword)
 	}
 
 	return r

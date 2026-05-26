@@ -140,3 +140,61 @@ func UpdateProfile(c *gin.Context) {
 		"name":    input.Name,
 	})
 }
+
+// Fungsi untuk Mengganti Password
+func ChangePassword(c *gin.Context) {
+	// Ambil email dari token
+	userEmail, exists := c.Get("user_email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Akses ditolak. Token tidak valid."})
+		return
+	}
+
+	// Tangkap input dari Flutter
+	var input struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data tidak valid"})
+		return
+	}
+
+	// Ambil password_hash lama dari database
+	var hashedPassword string
+	err := config.DB.QueryRow("SELECT password_hash FROM users WHERE email = $1", userEmail).Scan(&hashedPassword)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User tidak ditemukan"})
+		return
+	}
+
+	// Cek apakah akun ini login menggunakan Google API (OAuth)
+	if hashedPassword == "google_oauth" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Akun Google tidak dapat mengubah password melalui aplikasi ini."})
+		return
+	}
+
+	// Bandingkan password lama yang diketik dengan yang ada di database
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(input.OldPassword))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Password saat ini salah!"})
+		return
+	}
+
+	// Jika cocok, enkripsi (hash) password yang baru
+	newHashedPassword, errHash := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if errHash != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengenkripsi password baru"})
+		return
+	}
+
+	// Simpan password baru ke database
+	_, errUpdate := config.DB.Exec("UPDATE users SET password_hash = $1 WHERE email = $2", string(newHashedPassword), userEmail)
+	if errUpdate != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan password ke database"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password berhasil diperbarui!"})
+}
