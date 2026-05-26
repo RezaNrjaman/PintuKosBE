@@ -126,7 +126,6 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// 3. Eksekusi query SQL menggunakan sintaks PostgreSQL ($1, $2) sesuai config.DB Anda
 	query := "UPDATE users SET name = $1 WHERE email = $2"
 	_, err := config.DB.Exec(query, input.Name, userEmail)
 	if err != nil {

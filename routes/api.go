@@ -30,6 +30,5 @@ func SetupRoutes() *gin.Engine {
 		protected.PUT("/profile", controllers.UpdateProfile) 
 		protected.PUT("/security/password", controllers.ChangePassword)
 	}
-
 	return r
 }
