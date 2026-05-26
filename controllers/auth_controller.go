@@ -110,27 +110,33 @@ func GetProfile(c *gin.Context) {
 	})
 }
 
+// UpdateProfile menangani pembaruan nama menggunakan Native SQL bawaan pintukos-backend
 func UpdateProfile(c *gin.Context) {
-    // 1. Ambil ID User dari Token JWT (asumsi email ada di context dari middleware)
-    email, _ := c.Get("email") 
-    
-    var input struct {
-        Name  string `json:"name"`
-        Email string `json:"email"`
-    }
+	// 1. Ambil email dari JWT token (Sama persis dengan fungsi GetProfile Anda)
+	userEmail, exists := c.Get("user_email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Tidak ada akses. Token tidak valid."})
+		return
+	}
 
-    if err := c.ShouldBindJSON(&input); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Data tidak valid"})
-        return
-    }
+	// 2. Bind JSON menggunakan struct UpdateProfileInput dari package models Anda
+	var input models.UpdateProfileInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nama lengkap wajib diisi"})
+		return
+	}
 
-    // 2. Update database
-    query := "UPDATE users SET name = $1, email = $2 WHERE email = $3"
-    _, err := config.DB.Exec(query, input.Name, input.Email, email)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal update profil"})
-        return
-    }
+	// 3. Eksekusi query SQL menggunakan sintaks PostgreSQL ($1, $2) sesuai config.DB Anda
+	query := "UPDATE users SET name = $1 WHERE email = $2"
+	_, err := config.DB.Exec(query, input.Name, userEmail)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui database"})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "Profil berhasil diperbarui"})
+	// 4. Return status 200 OK ke Flutter
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Profil berhasil diupdate",
+		"name":    input.Name,
+	})
 }

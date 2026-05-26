@@ -24,8 +24,12 @@ func SetupRoutes() *gin.Engine {
 		protected.GET("/favorites/check/:id", controllers.CheckFavorite)
 		protected.POST("/favorites/toggle/:id", controllers.ToggleFavorite) 
 		protected.GET("/favorites", controllers.GetFavorites)
+		
 		protected.GET("/profile", controllers.GetProfile)
-		protected.PUT("/profile", controllers.UpdateProfile)
+		
+		// UBAH BAGIAN INI: 
+		// Hapus "/update" agar sesuai dengan Flutter, dan hapus middleware.RequireAuth() yang berulang
+		protected.PUT("/profile", controllers.UpdateProfile) 
 	}
 
 	return r
