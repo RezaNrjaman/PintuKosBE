@@ -9,13 +9,16 @@ import (
 
 func SetupRoutes() *gin.Engine {
 	r := gin.Default()
+	
 
 	// --- Rute Guest (Bebas Akses Tanpa Login) ---
 	r.GET("/api/kos", controllers.GetKosList)
 	r.GET("/api/kos/:id", controllers.GetKosDetail)
 	
 	r.POST("/api/register", controllers.Register) 
-	r.POST("/api/login", controllers.Login)       
+	r.POST("/api/login", controllers.Login)   
+	
+    r.POST("/api/google-login", controllers.GoogleLogin)
 
 	// --- Rute Terproteksi (Wajib Login) ---
 	protected := r.Group("/api")

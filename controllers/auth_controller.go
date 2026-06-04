@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"pintukos-backend/config"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/idtoken"
 )
 
 // Kunci rahasia untuk membuat token (Jangan disebar!)
@@ -196,4 +198,59 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password berhasil diperbarui!"})
+}
+
+// ✅ FUNGSI LOGIN GOOGLE (Versi Ringkas & Kompatibel)
+func GoogleLogin(c *gin.Context) {
+	var input struct {
+		IDToken string `json:"id_token"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Token tidak valid"})
+		return
+	}
+
+	// 🔑 Ganti dengan Client ID bertipe WEB milik Anda dari Google Cloud Console
+	googleClientID := "GANTI_DENGAN_CLIENT_ID_GOOGLE_ANDA"
+
+	// Validasi token ke server Google
+	payload, err := idtoken.Validate(context.Background(), input.IDToken, googleClientID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Verifikasi keamanan Google gagal"})
+		return
+	}
+
+	email := payload.Claims["email"].(string)
+	name := payload.Claims["name"].(string)
+
+	// Cek apakah email sudah ada di database
+	var existingEmail string
+	errDB := config.DB.QueryRow("SELECT email FROM users WHERE email = $1", email).Scan(&existingEmail)
+
+	if errDB != nil {
+		// Jika belum ada, langsung daftarkan (Auto-Register)
+		_, errInsert := config.DB.Exec(
+			"INSERT INTO users (name, email, password_hash) VALUES ($1, $2, 'google_oauth')",
+			name, email,
+		)
+		if errInsert != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mendaftarkan akun Google"})
+			return
+		}
+	}
+
+	// Buat token akses internal PintuKos
+	expirationTime := time.Now().Add(24 * time.Hour)
+	claims := &jwt.RegisteredClaims{
+		Subject:   email,
+		ExpiresAt: jwt.NewNumericDate(expirationTime),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, _ := token.SignedString(jwtKey)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login Google Sukses!",
+		"token":   tokenString,
+	})
 }
